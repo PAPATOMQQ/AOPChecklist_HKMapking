@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>建築分析報告</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>建築分析報告</h1>
+    <table border="1">
+        <tr><th>地址</th><th>建築名稱</th><th>高度 (公尺)</th><th>樓層</th></tr>
+        <!-- 你可以手動填入數據 -->
+    </table>
+    <canvas id="heightChart" width="400" height="200"></canvas>
+    <script>
+        const ctx = document.getElementById('heightChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['建築1', '建築2', '建築3'], // 替換成真實名稱
+                datasets: [{
+                    label: '高度 (公尺)',
+                    data: [100, 200, 300], // 替換成真實數據
+                    backgroundColor: ['#1E90FF', '#FF6347', '#32CD32']
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+    </script>
+</body>
+</html>
