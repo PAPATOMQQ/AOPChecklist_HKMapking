@@ -352,6 +352,11 @@
     <button onclick="checkCompletion()">檢查完成情況</button>
     <div id="status"></div>
     <button onclick="generateReport()" id="generate-button" disabled>生成報告</button>
+    <div id="export-section">
+    <button onclick="exportTable()" data-en="export_table_button">複製表格到剪貼板</button>
+    <a id="download-link" href="#" download="checklist.txt" data-en="download_table_link">下載表格</a>
+    <p data-en="export_description">點擊「複製表格到剪貼板」將表格內容複製到剪貼板，或點擊「下載表格」保存為文本文件。</p>
+</div>
     <button onclick="editDetails()" id="edit-button" style="display:none;">修改詳情</button>
 
     <div id="report" style="display:none;">
@@ -363,6 +368,41 @@
     </div>
 
     <script>
+        function exportTable() {
+    let tableContent = "香港無人機飛行前Checklist（含審計項目及身體檢查）\n\n";
+    tableContent += `行動時間: ${document.getElementById('action_time').value}\n`;
+    tableContent += `行動地點: ${document.getElementById('action_location').value}\n`;
+    tableContent += `行動主題: ${document.getElementById('action_theme').value}\n\n`;
+
+    document.querySelectorAll('.section').forEach(section => {
+        const sectionTitle = section.querySelector('h2').textContent;
+        tableContent += `${sectionTitle}\n`;
+        const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const label = checkbox.parentElement.querySelector('span[data-en]').textContent;
+                const timestampId = `timestamp-${checkbox.value}`;
+                const timestamp = localStorage.getItem(timestampId) || "未記錄";
+                tableContent += `- ${label} (完成時間: ${timestamp})\n`;
+            }
+        });
+        tableContent += '\n';
+    });
+
+    tableContent += `Accountable Manager: ${document.getElementById('accountable_manager_name').value}\n`;
+
+    // 複製到剪貼板
+    navigator.clipboard.writeText(tableContent).then(() => {
+        alert('表格內容已複製到剪貼板！');
+    });
+
+    // 生成下載文件
+    const blob = new Blob([tableContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const downloadLink = document.getElementById('download-link');
+    downloadLink.href = url;
+    downloadLink.textContent = '下載表格';
+}
         const translations = {
             'zh-HK': {
                 'title': '香港無人機飛行前Checklist（含審計項目及身體檢查）',
