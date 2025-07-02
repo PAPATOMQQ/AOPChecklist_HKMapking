@@ -1,0 +1,873 @@
+
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香港無人機飛行前Checklist（2025_7_2）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .section {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        label {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .timestamp {
+            margin-left: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+        button {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px 0 0;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #report {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #confirm-button {
+            background-color: #007bff;
+            margin-top: 15px;
+        }
+        #confirm-button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #language-switch {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #language-switch:hover {
+            background-color: #0056b3;
+        }
+        #action-details-display {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .edit-section, #edit-action-details {
+            display: none;
+            background-color: #ffc107;
+        }
+        .edit-section:hover, #edit-action-details:hover {
+            background-color: #e0a800;
+        }
+        .section-status {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <button id="language-switch" onclick="toggleLanguage()">English</button>
+    <h1 data-en="title">香港無人機飛行前Checklist（含審計項目及身體檢查）</h1>
+
+    <!-- 行動詳情部分 -->
+    <div class="section" id="action-details">
+        <h2 data-en="action_details">行動詳情</h2>
+        <div class="input-group">
+            <label for="action_time" data-en="action_time_label">行動時間：</label>
+            <input type="text" id="action_time" placeholder="例如：2025年6月16日 10:30 AM" data-en="action_time_placeholder">
+        </div>
+        <div class="input-group">
+            <label for="action_location" data-en="action_location_label">行動地點：</label>
+            <input type="text" id="action_location" placeholder="例如：香港國際機場" data-en="action_location_placeholder">
+        </div>
+        <div class="input-group">
+            <label for="action_theme" data-en="action_theme_label">行動主題：</label>
+            <input type="text" id="action_theme" placeholder="例如：定期維護飛行" data-en="action_theme_placeholder">
+        </div>
+        <button id="confirm-action-details" onclick="confirmActionDetails()" data-en="confirm_button">確認</button>
+        <div id="action-details-display">
+            <p><strong data-en="action_time_label">行動時間：</strong> <span id="display-time"></span></p>
+            <p><strong data-en="action_location_label">行動地點：</strong> <span id="display-location"></span></p>
+            <p><strong data-en="action_theme_label">行動主題：</strong> <span id="display-theme"></span></p>
+        </div>
+        <button id="edit-action-details" onclick="editActionDetails()" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-action-details"></div>
+    </div>
+
+    <!-- 機師健康檢查部分 -->
+    <div class="section" id="pilot-health">
+        <h2 data-en="pilot_health">機師身體檢查</h2>
+        <label>
+            <input type="checkbox" name="pilot_health" value="health_check_recent">
+            <span data-en="pilot_health_recent">機師最近一次身體檢查日期在過去6個月內</span>
+            <span class="timestamp" id="timestamp-health_check_recent"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="pilot_health" value="health_check_passed">
+            <span data-en="pilot_health_passed">機師身體檢查結果合格</span>
+            <span class="timestamp" id="timestamp-health_check_passed"></span>
+        </label>
+        <button class="confirm-section" data-section="pilot-health" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="pilot-health" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-pilot-health"></div>
+    </div>
+
+    <!-- 飛行前準備工作 -->
+    <div class="section" id="pre-flight-checks">
+        <h2 data-en="pre_flight_checks">飛行前準備工作</h2>
+        <label>
+            <input type="checkbox" name="pre_flight" value="equipment_check">
+            <span data-en="pre_flight_equipment_check">飛行設備確認正常運作</span>
+            <span class="timestamp" id="timestamp-equipment_check"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="pre_flight" value="weather_check">
+            <span data-en="pre_flight_weather_check">天氣狀況確認適宜飛行</span>
+            <span class="timestamp" id="timestamp-weather_check"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="pre_flight" value="flight_plan_check">
+            <span data-en="pre_flight_flight_plan_check">飛行計劃確認無誤</span>
+            <span class="timestamp" id="timestamp-flight_plan_check"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="pre_flight" value="permit_safety_check">
+            <span data-en="pre_flight_permit_safety_check">飛行許可及安全要求確認</span>
+            <span class="timestamp" id="timestamp-permit_safety_check"></span>
+        </label>
+        <button class="confirm-section" data-section="pre-flight-checks" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="pre-flight-checks" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-pre-flight-checks"></div>
+    </div>
+
+    <!-- 飛行計劃部分 -->
+    <div class="section" id="flight-plan">
+        <h2 data-en="flight_plan">飛行計劃 (Flight Plan)</h2>
+        <label>
+            <input type="checkbox" name="flight_plan" value="date_time">
+            <span data-en="flight_plan_date_time">飛行日期和時間已確定</span>
+            <span class="timestamp" id="timestamp-date_time"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="location">
+            <span data-en="flight_plan_location">飛行地點已確定</span>
+            <span class="timestamp" id="timestamp-location"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="purpose">
+            <span data-en="flight_plan_purpose">飛行目的已明確</span>
+            <span class="timestamp" id="timestamp-purpose"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="path">
+            <span data-en="flight_plan_path">飛行路徑已規劃</span>
+            <span class="timestamp" id="timestamp-path"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="takeoff_landing">
+            <span data-en="flight_plan_takeoff_landing">起飛和降落點已選定</span>
+            <span class="timestamp" id="timestamp-takeoff_landing"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="altitude">
+            <span data-en="flight_plan_altitude">飛行高度已設定</span>
+            <span class="timestamp" id="timestamp-altitude"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="speed">
+            <span data-en="flight_plan_speed">飛行速度已設定</span>
+            <span class="timestamp" id="timestamp-speed"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="geo_fence">
+            <span data-en="flight_plan_geo_fence">地理圍欄（Geo-fence）已設置</span>
+            <span class="timestamp" id="timestamp-geo_fence"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="distance_building">
+            <span data-en="flight_plan_distance_buildenergy">無人機與建築物的距離已標明</span>
+            <span class="timestamp" id="timestamp-distance_building"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="distance_people">
+            <span data-en="flight_plan_distance_people">無人機與人員、車輛等的距離已標Resolution: 1920x1080
+            <span data-en="flight_plan_structures_and_risks">飛行計劃包含100米內結構的細節和風險避免措施</span>
+            <span class="timestamp" id="timestamp-structures_and_risks"></span>
+        </label>
+        <button class="confirm-section" data-section="flight-plan" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="flight-plan" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-flight-plan"></div>
+    </div>
+
+    <!-- 場地安全評估部分 -->
+    <div class="section" id="site-safety">
+        <h2 data-en="site_safety">場地安全評估 (Site Safety Assessment - Form D)</h2>
+        <label>
+            <input type="checkbox" name="site_safety" value="boundary">
+            <span data-en="site_safety_boundary">飛行區域邊界已確定</span>
+            <span class="timestamp" id="timestamp-boundary"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="obstacles">
+            <span data-en="site_safety_obstacles">障礙物位置和高度已記錄</span>
+            <span class="timestamp" id="timestamp-obstacles"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="aircraft_activity">
+            <span data-en="site_safety_aircraft_activity">其他航空器活動已考慮</span>
+            <span class="timestamp" id="timestamp-aircraft_activity"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="restrictions">
+            <span data-en="site_safety_restrictions">飛行限制已確認</span>
+            <span class="timestamp" id="timestamp-restrictions"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="hazards">
+            <span data-en="site_safety_hazards">潛在危險或干擾源已識別</span>
+            <span class="timestamp" id="timestamp-hazards"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="habitation">
+            <span data-en="site_safety_habitation">附近居住和娛樂活動已考慮</span>
+            <span class="timestamp" id="timestamp-habitation"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="safety_measures">
+            <span data-en="site_safety_safety_measures">安全措施已安排</span>
+            <span class="timestamp" id="timestamp-safety_measures"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="approach_departure">
+            <span data-en="site_safety_approach_departure">進場和離場路徑已規劃</span>
+            <span class="timestamp" id="timestamp-approach_departure"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="permission">
+            <span data-en="site_safety_permission">土地或物業擁有者許可已獲得</span>
+            <span class="timestamp" id="timestamp-permission"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="weather">
+            <span data-en="site_safety_weather">天氣條件已確認適合飛行</span>
+            <span class="timestamp" id="timestamp-weather"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="pedestrian_distance">
+            <span data-en="site_safety_pedestrian_distance">行人距離已估計</span>
+            <span class="timestamp" id="timestamp-pedestrian_distance"></span>
+        </label>
+        <button class="confirm-section" data-section="site-safety" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="site-safety" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-site-safety"></div>
+    </div>
+
+    <!-- 風險管理部分 -->
+    <div class="section" id="risk-management">
+        <h2 data-en="risk_management">風險管理 (Risk Assessment - Form E)</h2>
+        <label>
+            <input type="checkbox" name="risk_management" value="hazards_identified">
+            <span data-en="risk_management_hazards_identified">潛在危險已識別</span>
+            <span class="timestamp" id="timestamp-hazards_identified"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="risk_management" value="risk_assessed">
+            <span data-en="risk_management_risk_assessed">風險等級已評估</span>
+            <span class="timestamp" id="timestamp-risk_assessed"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="risk_management" value="mitigation">
+            <span data-en="risk_management_mitigation">風險緩解措施已確定</span>
+            <span class="timestamp" id="timestamp-mitigation"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="risk_management" value="risk_green_zone">
+            <span data-en="risk_management_risk_green_zone">確認所有風險已緩解至可接受水平（綠色區域）</span>
+            <span class="timestamp" id="timestamp-risk_green_zone"></span>
+        </label>
+        <button class="confirm-section" data-section="risk-management" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="risk-management" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-risk-management"></div>
+    </div>
+
+    <!-- 許可和保險部分 -->
+    <div class="section" id="permits-insurance">
+        <h2 data-en="permits_insurance">許可和保險</h2>
+        <label>
+            <input type="checkbox" name="permits_insurance" value="permission_valid">
+            <span data-en="permits_insurance_permission_valid">相關許可有效</span>
+            <span class="timestamp" id="timestamp-permission_valid"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="permits_insurance" value="insurance_valid">
+            <span data-en="permits_insurance_insurance_valid">保險覆蓋已確認（至少1000萬港幣）</span>
+            <span class="timestamp" id="timestamp-insurance_valid"></span>
+        </label>
+        <button class="confirm-section" data-section="permits-insurance" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="permits-insurance" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-permits-insurance"></div>
+    </div>
+
+    <!-- 通訊部分 -->
+    <div class="section" id="communication">
+        <h2 data-en="communication">通訊</h2>
+        <label>
+            <input type="checkbox" name="communication" value="team_comm">
+            <span data-en="communication_team_comm">團隊內通訊方式已確定</span>
+            <span class="timestamp" id="timestamp-team_comm"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="communication" value="emergency_comm">
+            <span data-en="communication_emergency_comm">緊急聯絡方式已準備</span>
+            <span class="timestamp" id="timestamp-emergency_comm"></span>
+        </label>
+        <button class="confirm-section" data-section="communication" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="communication" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-communication"></div>
+    </div>
+
+    <!-- 人員和設備部分 -->
+    <div class="section" id="personnel-equipment">
+        <h2 data-en="personnel_equipment">人員和設備</h2>
+        <label>
+            <input type="checkbox" name="personnel_equipment" value="qualifications">
+            <span data-en="personnel_equipment_qualifications">人員資格和訓練已確認</span>
+            <span class="timestamp" id="timestamp-qualifications"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="personnel_equipment" value="equipment_status">
+            <span data-en="personnel_equipment_equipment_status">無人機和設備狀態已檢查</span>
+            <span class="timestamp" id="timestamp-status"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="personnel_equipment" value="system_updated">
+            <span data-en="personnel_equipment_system_updated">確認無人機系統已更新並按OM要求維護</span>
+            <span class="timestamp" id="timestamp-system_updated"></span>
+        </label>
+        <button class="confirm-section" data-section="personnel-equipment" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="personnel-equipment" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-personnel-equipment"></div>
+    </div>
+
+    <!-- 文件和記錄部分 -->
+    <div class="section" id="documentation">
+        <h2 data-en="documentation">文件和記錄</h2>
+        <label>
+            <input type="checkbox" name="documentation" value="battery_log_complete">
+            <span data-en="documentation_battery_log_complete">確認電池日誌（Form B）包含充電時間</span>
+            <span class="timestamp" id="timestamp-battery_log_complete"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="documentation" value="maintenance_log_clear">
+            <span data-en="documentation_maintenance_log_clear">確認維護日誌明確標示SUA識別和維護日期</span>
+            <span class="timestamp" id="timestamp-maintenance_log_clear"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="documentation" value="self_assessment_records">
+            <span data-en="documentation_self_assessment_records">確認自我評估記錄（Form F）已完成並存檔</span>
+            <span class="timestamp" id="timestamp-self_assessment_records"></span>
+        </label>
+        <button class="confirm-section" data-section="documentation" data-en="confirm_button">確認</button>
+        <button class="edit-section" data-section="documentation" data-en="edit_details_button">編輯</button>
+        <div class="section-status" id="status-documentation"></div>
+    </div>
+
+    <!-- 最終確認部分 -->
+    <div class="section" id="final-confirmation">
+        <h2 data-en="final_confirmation">最終確認</h2>
+        <label>
+            <input type="checkbox" name="final_confirmation" value="review_complete" disabled>
+            <span data-en="final_confirmation_review_complete">Accountable Manager或指定人員已審查並確認Checklist完整</span>
+            <span class="timestamp" id="timestamp-review_complete"></span>
+        </label>
+        <div class="input-group">
+            <label for="accountable_manager_name" data-en="accountable_manager_name_label">Accountable Manager姓名：</label>
+            <input type="text" id="accountable_manager_name" placeholder="請輸入姓名" data-en="accountable_manager_name_placeholder">
+        </div>
+    </div>
+
+    <button onclick="checkCompletion()" data-en="check_completion_button">檢查完成情況</button>
+    <div id="status"></div>
+    <button onclick="generateReport()" id="generate-button" disabled data-en="generate_report_button">生成報告</button>
+    <div id="export-section">
+        <button onclick="exportTable()" data-en="export_table_button">複製表格到剪貼板</button>
+        <a id="download-link" href="#" download="checklist.txt" data-en="download_table_link">下載表格</a>
+        <p data-en="export_description">點擊「複製表格到剪貼板」將表格內容複製到剪貼板，或點擊「下載表格」保存為文本文件。</p>
+    </div>
+    <button onclick="editDetails()" id="edit-button" style="display:none;" data-en="edit_details_button">修改詳情</button>
+
+    <div id="report" style="display:none;">
+        <h2 id="report-title"></h2>
+        <ul id="report-list"></ul>
+        <button onclick="confirmManager()" id="confirm-button" data-en="confirm_manager_button">Accountable Manager 確認</button>
+        <p id="confirmation-time"></p>
+        <p id="signature-reminder" style="color: red; font-weight: bold;" data-en="signature_reminder">請確認您已簽名。</p>
+    </div>
+
+    <script>
+        function exportTable() {
+            let tableContent = "香港無人機飛行前Checklist（含審計項目及身體檢查）\n\n";
+            tableContent += `行動時間: ${document.getElementById('action_time').value}\n`;
+            tableContent += `行動地點: ${document.getElementById('action_location').value}\n`;
+            tableContent += `行動主題: ${document.getElementById('action_theme').value}\n\n`;
+
+            document.querySelectorAll('.section').forEach(section => {
+                const sectionTitle = section.querySelector('h2').textContent;
+                tableContent += `${sectionTitle}\n`;
+                const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const label = checkbox.parentElement.querySelector('span[data-en]').textContent;
+                        const timestampId = `timestamp-${checkbox.value}`;
+                        const timestamp = localStorage.getItem(timestampId) || "未記錄";
+                        tableContent += `- ${label} (完成時間: ${timestamp})\n`;
+                    }
+                });
+                tableContent += '\n';
+            });
+
+            tableContent += `Accountable Manager: ${document.getElementById('accountable_manager_name').value}\n`;
+
+            // 複製到剪貼板
+            navigator.clipboard.writeText(tableContent).then(() => {
+                alert('表格內容已複製到剪貼板！');
+            });
+
+            // 生成下載文件
+            const blob = new Blob([tableContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.getElementById('download-link');
+            downloadLink.href = url;
+            downloadLink.textContent = '下載表格';
+        }
+
+        const translations = {
+            'zh-HK': {
+                'title': '香港無人機飛行前Checklist（含審計項目及身體檢查）',
+                'action_details': '行動詳情',
+                'action_time_label': '行動時間：',
+                'action_time_placeholder': '例如：2025年6月16日 10:30 AM',
+                'action_location_label': '行動地點：',
+                'action_location_placeholder': '例如：香港國際機場',
+                'action_theme_label': '行動主題：',
+                'action_theme_placeholder': '例如：定期維護飛行',
+                'confirm_button': '確認',
+                'pilot_health': '機師身體檢查',
+                'pilot_health_recent': '機師最近一次身體檢查日期在過去6個月內',
+                'pilot_health_passed': '機師身體檢查結果合格',
+                'pre_flight_checks': '飛行前準備工作',
+                'pre_flight_equipment_check': '飛行設備確認正常運作',
+                'pre_flight_weather_check': '天氣狀況確認適宜飛行',
+                'pre_flight_flight_plan_check': '飛行計劃確認無誤',
+                'pre_flight_permit_safety_check': '飛行許可及安全要求確認',
+                'flight_plan': '飛行計劃 (Flight Plan)',
+                'flight_plan_date_time': '飛行日期和時間已確定',
+                'flight_plan_location': '飛行地點已確定',
+                'flight_plan_purpose': '飛行目的已明確',
+                'flight_plan_path': '飛行路徑已規劃',
+                'flight_plan_takeoff_landing': '起飛和降落點已選定',
+                'flight_plan_altitude': '飛行高度已設定',
+                'flight_plan_speed': '飛行速度已設定',
+                'flight_plan_geo_fence': '地理圍欄（Geo-fence）已設置',
+                'flight_plan_distance_building': '無人機與建築物的距離已標明',
+                'flight_plan_distance_people': '無人機與人員、車輛等的距離已標明',
+                'flight_plan_structures_and_risks': '飛行計劃包含100米內結構的細節和風險避免措施',
+                'site_safety': '場地安全評估 (Site Safety Assessment - Form D)',
+                'site_safety_boundary': '飛行區域邊界已確定',
+                'site_safety_obstacles': '障礙物位置和高度已記錄',
+                'site_safety_aircraft_activity': '其他航空器活動已考慮',
+                'site_safety_restrictions': '飛行限制已確認',
+                'site_safety_hazards': '潛在危險或干擾源已識別',
+                'site_safety_habitation': '附近居住和娛樂活動已考慮',
+                'site_safety_safety_measures': '安全措施已安排',
+                'site_safety_approach_departure': '進場和離場路徑已規劃',
+                'site_safety_permission': '土地或物業擁有者許可已獲得',
+                'site_safety_weather': '天氣條件已確認適合飛行',
+                'site_safety_pedestrian_distance': '行人距離已估計',
+                'risk_management': '風險管理 (Risk Assessment - Form E)',
+                'risk_management_hazards_identified': '潛在危險已識別',
+                'risk_management_risk_assessed': '風險等級已評估',
+                'risk_management_mitigation': '風險緩解措施已確定',
+                'risk_management_risk_green_zone': '確認所有風險已緩解至可接受水平（綠色區域）',
+                'permits_insurance': '許可和保險',
+                'permits_insurance_permission_valid': '相關許可有效',
+                'permits_insurance_insurance_valid': '保險覆蓋已確認（至少1000萬港幣）',
+                'communication': '通訊',
+                'communication_team_comm': '團隊內通訊方式已確定',
+                'communication_emergency_comm': '緊急聯絡方式已準備',
+                'personnel_equipment': '人員和設備',
+                'personnel_equipment_qualifications': '人員資格和訓練已確認',
+                'personnel_equipment_equipment_status': '無人機和設備狀態已檢查',
+                'personnel_equipment_system_updated': '確認無人機系統已更新並按OM要求維護',
+                'documentation': '文件和記錄',
+                'documentation_battery_log_complete': '確認電池日誌（Form B）包含充電時間',
+                'documentation_maintenance_log_clear': '確認維護日誌明確標示SUA識別和維護日期',
+                'documentation_self_assessment_records': '確認自我評估記錄（Form F）已完成並存檔',
+                'final_confirmation': '最終確認',
+                'final_confirmation_review_complete': 'Accountable Manager或指定人員已審查並確認Checklist完整',
+                'accountable_manager_name_label': 'Accountable Manager姓名：',
+                'accountable_manager_name_placeholder': '請輸入姓名',
+                'check_completion_button': '檢查完成情況',
+                'generate_report_button': '生成報告',
+                'edit_details_button': '編輯',
+                'confirm_manager_button': 'Accountable Manager 確認',
+                'signature_reminder': '請確認您已簽名。',
+                'confirmed': '已確認',
+                'please_complete_all_items': '請先完成所有項目',
+                'please_fill_all_details': '請填寫所有行動詳情',
+                'incomplete_items_message': '以下項目尚未完成：\n',
+                'incomplete_sections_message': '以下部分尚未確認：\n'
+            },
+            'en': {
+                'title': 'Pre-Flight Checklist for Drones in Hong Kong (Including Audit Items and Health Check)',
+                'action_details': 'Action Details',
+                'action_time_label': 'Action Time:',
+                'action_time_placeholder': 'e.g., June 16, 2025 10:30 AM',
+                'action_location_label': 'Action Location:',
+                'action_location_placeholder': 'e.g., Hong Kong International Airport',
+                'action_theme_label': 'Action Theme:',
+                'action_theme_placeholder': 'e.g., Routine Maintenance Flight',
+                'confirm_button': 'Confirm',
+                'pilot_health': 'Pilot Health Check',
+                'pilot_health_recent': "Pilot's most recent health check was within the past 6 months",
+                'pilot_health_passed': "Pilot's health check results are satisfactory",
+                'pre_flight_checks': 'Pre-Flight Preparations',
+                'pre_flight_equipment_check': 'Drone equipment checked and confirmed operational',
+                'pre_flight_weather_check': 'Weather conditions confirmed suitable for flight',
+                'pre_flight_flight_plan_check': 'Flight plan reviewed and confirmed',
+                'pre_flight_permit_safety_check': 'Flight permits and safety requirements confirmed',
+                'flight_plan': 'Flight Plan',
+                'flight_plan_date_time': 'Flight date and time confirmed',
+                'flight_plan_location': 'Flight location confirmed',
+                'flight_plan_purpose': 'Flight purpose clearly defined',
+                'flight_plan_path': 'Flight path planned',
+                'flight_plan_takeoff_landing': 'Takeoff and landing points selected',
+                'flight_plan_altitude': 'Flight altitude set',
+                'flight_plan_speed': 'Flight speed set',
+                'flight_plan_geo_fence': 'Geo-fence set',
+                'flight_plan_distance_building': 'Distance from buildings specified',
+                'flight_plan_distance_people': 'Distance from people and vehicles specified',
+                'flight_plan_structures_and_risks': 'Flight plan includes details of structures within 100m and risk avoidance measures',
+                'site_safety': 'Site Safety Assessment (Form D)',
+                'site_safety_boundary': 'Flight area boundaries confirmed',
+                'site_safety_obstacles': 'Obstacle positions and heights recorded',
+                'site_safety_aircraft_activity': 'Other aircraft activities considered',
+                'site_safety_restrictions': 'Flight restrictions confirmed',
+                'site_safety_hazards': 'Potential hazards or interference sources identified',
+                'site_safety_habitation': 'Nearby residential and recreational activities considered',
+                'site_safety_safety_measures': 'Safety measures arranged',
+                'site_safety_approach_departure': 'Approach and departure paths planned',
+                'site_safety_permission': 'Land or property owner permission obtained',
+                'site_safety_weather': 'Weather conditions confirmed suitable for flight',
+                'site_safety_pedestrian_distance': 'Pedestrian distance estimated',
+                'risk_management': 'Risk Management (Form E)',
+                'risk_management_hazards_identified': 'Potential hazards identified',
+                'risk_management_risk_assessed': 'Risk levels assessed',
+                'risk_management_mitigation': 'Risk mitigation measures identified',
+                'risk_management_risk_green_zone': 'All risks mitigated to acceptable level (Green Zone)',
+                'permits_insurance': 'Permits and Insurance',
+                'permits_insurance_permission_valid': 'Relevant permits valid',
+                'permits_insurance_insurance_valid': 'Insurance coverage confirmed (at least HKD 10 million)',
+                'communication': 'Communication',
+                'communication_team_comm': 'Team communication method confirmed',
+                'communication_emergency_comm': 'Emergency contact method prepared',
+                'personnel_equipment': 'Personnel and Equipment',
+                'personnel_equipment_qualifications': 'Personnel qualifications and training confirmed',
+                'personnel_equipment_equipment_status': 'Drone and equipment status checked',
+                'personnel_equipment_system_updated': 'Drone system updated and maintained per OM requirements',
+                'documentation': 'Documentation and Records',
+                'documentation_battery_log_complete': 'Battery log (Form B) completed including charge times',
+                'documentation_maintenance_log_clear': 'Maintenance log clearly indicates SUA identification and maintenance dates',
+                'documentation_self_assessment_records': 'Self-assessment records (Form F) completed and filed',
+                'final_confirmation': 'Final Confirmation',
+                'final_confirmation_review_complete': 'Accountable Manager or designated personnel reviewed and confirmed checklist complete',
+                'accountable_manager_name_label': 'Accountable Manager Name:',
+                'accountable_manager_name_placeholder': 'Please enter your name',
+                'check_completion_button': 'Check Completion',
+                'generate_report_button': 'Generate Report',
+                'edit_details_button': 'Edit',
+                'confirm_manager_button': 'Accountable Manager Confirmation',
+                'signature_reminder': 'Please confirm you have signed.',
+                'confirmed': 'Confirmed',
+                'please_complete_all_items': 'Please complete all items first',
+                'please_fill_all_details': 'Please fill in all action details',
+                'incomplete_items_message': 'The following items are not completed:\n',
+                'incomplete_sections_message': 'The following sections are not confirmed:\n'
+            }
+        };
+
+        let currentLang = 'zh-HK';
+        const sectionConfirmations = {
+            'action-details': false,
+            'pilot-health': false,
+            'pre-flight-checks': false,
+            'flight-plan': false,
+            'site-safety': false,
+            'risk-management': false,
+            'permits-insurance': false,
+            'communication': false,
+            'personnel-equipment': false,
+            'documentation': false
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh-HK' ? 'en' : 'zh-HK';
+            document.querySelectorAll('[data-en]').forEach(el => {
+                const key = el.getAttribute('data-en');
+                if (translations[currentLang][key]) {
+                    if (el.tagName === 'INPUT' && el.type === 'text') {
+                        el.placeholder = translations[currentLang][key];
+                    } else {
+                        el.textContent = translations[currentLang][key];
+                    }
+                }
+            });
+            document.getElementById('language-switch').textContent = currentLang === 'zh-HK' ? 'English' : '中文';
+        }
+
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const statusDiv = document.getElementById('status');
+        const generateButton = document.getElementById('generate-button');
+        const editButton = document.getElementById('edit-button');
+        const report = document.getElementById('report');
+        const reportList = document.getElementById('report-list');
+        const reportTitle = document.getElementById('report-title');
+        const confirmationTime = document.getElementById('confirmation-time');
+        const confirmActionDetailsButton = document.getElementById('confirm-action-details');
+        const editActionDetailsButton = document.getElementById('edit-action-details');
+        const actionDetailsDisplay = document.getElementById('action-details-display');
+        const displayTime = document.getElementById('display-time');
+        const displayLocation = document.getElementById('display-location');
+        const displayTheme = document.getElementById('display-theme');
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    const timestamp = new Date().toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
+                    const timestampId = `timestamp-${this.value}`;
+                    document.getElementById(timestampId).textContent = `完成時間: ${timestamp}`;
+                    localStorage.setItem(timestampId, timestamp);
+                } else {
+                    const timestampId = `timestamp-${this.value}`;
+                    document.getElementById(timestampId).textContent = '';
+                    localStorage.removeItem(timestampId);
+                }
+                checkAllSectionsConfirmed();
+            });
+        });
+
+        document.querySelectorAll('.confirm-section').forEach(button => {
+            button.addEventListener('click', function() {
+                const sectionId = this.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+                const uncheckedItems = Array.from(checkboxes).filter(cb => !cb.checked);
+                if (uncheckedItems.length === 0) {
+                    sectionConfirmations[sectionId] = true;
+                    checkboxes.forEach(cb => cb.disabled = true);
+                    this.style.display = 'none';
+                    section.querySelector('.edit-section').style.display = 'inline-block';
+                    document.getElementById(`status-${sectionId}`).textContent = translations[currentLang]['confirmed'];
+                    checkAllSectionsConfirmed();
+                } else {
+                    let message = translations[currentLang]['incomplete_items_message'];
+                    uncheckedItems.forEach(item => {
+                        const label = item.parentElement.querySelector('span[data-en]').textContent;
+                        message += `- ${label}\n`;
+                    });
+                    alert(message);
+                }
+            });
+        });
+
+        document.querySelectorAll('.edit-section').forEach(button => {
+            button.addEventListener('click', function() {
+                const sectionId = this.getAttribute('data-section');
+                sectionConfirmations[sectionId] = false;
+                const section = document.getElementById(sectionId);
+                const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(cb => cb.disabled = false);
+                section.querySelector('.confirm-section').style.display = 'inline-block';
+                this.style.display = 'none';
+                document.getElementById(`status-${sectionId}`).textContent = '';
+                checkAllSectionsConfirmed();
+            });
+        });
+
+        function confirmActionDetails() {
+            const time = document.getElementById('action_time').value.trim();
+            const location = document.getElementById('action_location').value.trim();
+            const theme = document.getElementById('action_theme').value.trim();
+            if (time && location && theme) {
+                sectionConfirmations['action-details'] = true;
+                displayTime.textContent = time;
+                displayLocation.textContent = location;
+                displayTheme.textContent = theme;
+                actionDetailsDisplay.style.display = 'block';
+                confirmActionDetailsButton.disabled = true;
+                editActionDetailsButton.style.display = 'inline-block';
+                document.getElementById('status-action-details').textContent = translations[currentLang]['confirmed'];
+                checkAllSectionsConfirmed();
+            } else {
+                alert(translations[currentLang]['please_fill_all_details']);
+            }
+        }
+
+        function editActionDetails() {
+            sectionConfirmations['action-details'] = false;
+            actionDetailsDisplay.style.display = 'none';
+            confirmActionDetailsButton.disabled = false;
+            editActionDetailsButton.style.display = 'none';
+            document.getElementById('status-action-details').textContent = '';
+            checkAllSectionsConfirmed();
+        }
+
+        function checkAllSectionsConfirmed() {
+            const allSectionsConfirmed = Object.values(sectionConfirmations).every(val => val);
+            const finalCheckbox = document.querySelector('#final-confirmation input[type="checkbox"]');
+            if (allSectionsConfirmed) {
+                finalCheckbox.disabled = false;
+            } else {
+                finalCheckbox.disabled = true;
+                finalCheckbox.checked = false;
+            }
+            const managerName = document.getElementById('accountable_manager_name').value.trim();
+            if (allSectionsConfirmed && finalCheckbox.checked && managerName) {
+                generateButton.disabled = false;
+            } else {
+                generateButton.disabled = true;
+            }
+        }
+
+        function checkCompletion() {
+            const allSectionsConfirmed = Object.values(sectionConfirmations).every(val => val);
+            const finalCheckbox = document.querySelector('#final-confirmation input[type="checkbox"]').checked;
+            const managerName = document.getElementById('accountable_manager_name').value.trim();
+
+            if (allSectionsConfirmed && finalCheckbox && managerName) {
+                statusDiv.textContent = currentLang === 'zh-HK' ? '所有項目已完成，可以開始飛行！' : 'All items are completed, you can start the flight!';
+                statusDiv.style.color = '#28a745';
+            } else {
+                let message = '';
+                if (!allSectionsConfirmed) {
+                    message += translations[currentLang]['incomplete_sections_message'];
+                    for (const [sectionId, confirmed] of Object.entries(sectionConfirmations)) {
+                        if (!confirmed) {
+                            const sectionTitle = document.getElementById(sectionId).querySelector('h2').textContent;
+                            message += `- ${sectionTitle}\n`;
+                        }
+                    }
+                }
+                if (!finalCheckbox) {
+                    message += `- ${translations[currentLang]['final_confirmation_review_complete']}\n`;
+                }
+                if (!managerName) {
+                    message += `- ${translations[currentLang]['accountable_manager_name_label']}未填寫\n`;
+                }
+                alert(message);
+                statusDiv.textContent = currentLang === 'zh-HK' ? '仍有未完成項目，請再確認Checklist' : 'There are still incomplete items, please check the checklist again';
+                statusDiv.style.color = '#dc3545';
+            }
+        }
+
+        function generateReport() {
+            const time = document.getElementById('action_time').value.trim();
+            const location = document.getElementById('action_location').value.trim();
+            const theme = document.getElementById('action_theme').value.trim();
+            const managerName = document.getElementById('accountable_manager_name').value.trim();
+            reportTitle.textContent = `${time} - ${location} - ${theme} - Accountable Manager: ${managerName}`;
+            reportList.innerHTML = '';
+            checkboxes.forEach(checkbox => {
+                const timestampId = `timestamp-${checkbox.value}`;
+                const timestamp = localStorage.getItem(timestampId);
+                if (timestamp) {
+                    const listItem = document.createElement('li');
+                    const textKey = checkbox.parentElement.querySelector('span[data-en]').getAttribute('data-en');
+                    const text = translations[currentLang][textKey];
+                    listItem.textContent = `${text} - 完成時間: ${timestamp}`;
+                    reportList.appendChild(listItem);
+                }
+            });
+            report.style.display = 'block';
+            generateButton.disabled = true;
+            editButton.style.display = 'block';
+        }
+
+        function editDetails() {
+            report.style.display = 'none';
+            generateButton.disabled = false;
+            editButton.style.display = 'none';
+        }
+
+        function confirmManager() {
+            const confirmTimestamp = new Date().toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
+            confirmationTime.textContent = currentLang === 'zh-HK' ? `Accountable Manager 確認時間: ${confirmTimestamp}` : `Accountable Manager confirmation time: ${confirmTimestamp}`;
+            alert(currentLang === 'zh-HK' ? 'Accountable Manager 已確認所有文件和記錄，請再次確認您已簽名！' : 'Accountable Manager has confirmed all documents and records, please confirm you have signed!');
+        }
+
+        document.querySelector('#final-confirmation input[type="checkbox"]').addEventListener('change', checkAllSectionsConfirmed);
+        document.getElementById('accountable_manager_name').addEventListener('input', checkAllSectionsConfirmed);
+        document.querySelectorAll('.input-group input').forEach(input => {
+            input.addEventListener('input', checkAllSectionsConfirmed);
+        });
+    </script>
+</body>
+</html>
