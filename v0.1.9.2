@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -165,7 +164,7 @@
             <span data-en="pilot_health_passed">機師身體檢查結果合格</span>
             <span class="timestamp" id="timestamp-health_check_passed"></span>
         </label>
-        <button class="confirm-section" data-section="pilot-health" data-en="confirm_button">確認</button>
+        <button class="confirm-section" data="pilot-health" data-en="confirm_button">確認</button>
         <button class="edit-section" data-section="pilot-health" data-en="edit_details_button">編輯</button>
         <div class="section-status" id="status-pilot-health"></div>
     </div>
@@ -243,12 +242,16 @@
         </label>
         <label>
             <input type="checkbox" name="flight_plan" value="distance_building">
-            <span data-en="flight_plan_distance_buildenergy">無人機與建築物的距離已標明</span>
+            <span data-en="flight_plan_distance_building">無人機與建築物的距離已標明</span>
             <span class="timestamp" id="timestamp-distance_building"></span>
         </label>
         <label>
             <input type="checkbox" name="flight_plan" value="distance_people">
-            <span data-en="flight_plan_distance_people">無人機與人員、車輛等的距離已標Resolution: 1920x1080
+            <span data-en="flight_plan_distance_people">無人機與人員、車輛等的距離已標明</span>
+            <span class="timestamp" id="timestamp-distance_people"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="flight_plan" value="structures_and_risks">
             <span data-en="flight_plan_structures_and_risks">飛行計劃包含100米內結構的細節和風險避免措施</span>
             <span class="timestamp" id="timestamp-structures_and_risks"></span>
         </label>
@@ -315,6 +318,11 @@
             <span data-en="site_safety_pedestrian_distance">行人距離已估計</span>
             <span class="timestamp" id="timestamp-pedestrian_distance"></span>
         </label>
+        <label>
+            <input type="checkbox" name="site_safety" value="form_d_signed_by_am">
+            <span data-en="site_safety_form_d_signed_by_am">Confirm that Form D has been signed by the Accountable Manager (AM)</span>
+            <span class="timestamp" id="timestamp-form_d_signed_by_am"></span>
+        </label>
         <button class="confirm-section" data-section="site-safety" data-en="confirm_button">確認</button>
         <button class="edit-section" data-section="site-safety" data-en="edit_details_button">編輯</button>
         <div class="section-status" id="status-site-safety"></div>
@@ -342,6 +350,11 @@
             <input type="checkbox" name="risk_management" value="risk_green_zone">
             <span data-en="risk_management_risk_green_zone">確認所有風險已緩解至可接受水平（綠色區域）</span>
             <span class="timestamp" id="timestamp-risk_green_zone"></span>
+        </label>
+        <label>
+            <input type="checkbox" name="risk_management" value="form_e_signed_by_am">
+            <span data-en="risk_management_form_e_signed_by_am">Confirm that Form E has been signed by the Accountable Manager (AM)</span>
+            <span class="timestamp" id="timestamp-form_e_signed_by_am"></span>
         </label>
         <button class="confirm-section" data-section="risk-management" data-en="confirm_button">確認</button>
         <button class="edit-section" data-section="risk-management" data-en="edit_details_button">編輯</button>
@@ -395,7 +408,7 @@
         <label>
             <input type="checkbox" name="personnel_equipment" value="equipment_status">
             <span data-en="personnel_equipment_equipment_status">無人機和設備狀態已檢查</span>
-            <span class="timestamp" id="timestamp-status"></span>
+            <span class="timestamp" id="timestamp-equipment_status"></span>
         </label>
         <label>
             <input type="checkbox" name="personnel_equipment" value="system_updated">
@@ -463,42 +476,6 @@
     </div>
 
     <script>
-        function exportTable() {
-            let tableContent = "香港無人機飛行前Checklist（含審計項目及身體檢查）\n\n";
-            tableContent += `行動時間: ${document.getElementById('action_time').value}\n`;
-            tableContent += `行動地點: ${document.getElementById('action_location').value}\n`;
-            tableContent += `行動主題: ${document.getElementById('action_theme').value}\n\n`;
-
-            document.querySelectorAll('.section').forEach(section => {
-                const sectionTitle = section.querySelector('h2').textContent;
-                tableContent += `${sectionTitle}\n`;
-                const checkboxes = section.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const label = checkbox.parentElement.querySelector('span[data-en]').textContent;
-                        const timestampId = `timestamp-${checkbox.value}`;
-                        const timestamp = localStorage.getItem(timestampId) || "未記錄";
-                        tableContent += `- ${label} (完成時間: ${timestamp})\n`;
-                    }
-                });
-                tableContent += '\n';
-            });
-
-            tableContent += `Accountable Manager: ${document.getElementById('accountable_manager_name').value}\n`;
-
-            // 複製到剪貼板
-            navigator.clipboard.writeText(tableContent).then(() => {
-                alert('表格內容已複製到剪貼板！');
-            });
-
-            // 生成下載文件
-            const blob = new Blob([tableContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const downloadLink = document.getElementById('download-link');
-            downloadLink.href = url;
-            downloadLink.textContent = '下載表格';
-        }
-
         const translations = {
             'zh-HK': {
                 'title': '香港無人機飛行前Checklist（含審計項目及身體檢查）',
@@ -542,11 +519,13 @@
                 'site_safety_permission': '土地或物業擁有者許可已獲得',
                 'site_safety_weather': '天氣條件已確認適合飛行',
                 'site_safety_pedestrian_distance': '行人距離已估計',
+                'site_safety_form_d_signed_by_am': '確認Form D已由Accountable Manager (AM)簽署',
                 'risk_management': '風險管理 (Risk Assessment - Form E)',
                 'risk_management_hazards_identified': '潛在危險已識別',
                 'risk_management_risk_assessed': '風險等級已評估',
                 'risk_management_mitigation': '風險緩解措施已確定',
                 'risk_management_risk_green_zone': '確認所有風險已緩解至可接受水平（綠色區域）',
+                'risk_management_form_e_signed_by_am': '確認Risk Assessment Form (Form E)在操作前已由Accountable Manager (AM)簽署',
                 'permits_insurance': '許可和保險',
                 'permits_insurance_permission_valid': '相關許可有效',
                 'permits_insurance_insurance_valid': '保險覆蓋已確認（至少1000萬港幣）',
@@ -574,7 +553,11 @@
                 'please_complete_all_items': '請先完成所有項目',
                 'please_fill_all_details': '請填寫所有行動詳情',
                 'incomplete_items_message': '以下項目尚未完成：\n',
-                'incomplete_sections_message': '以下部分尚未確認：\n'
+                'incomplete_sections_message': '以下部分尚未確認：\n',
+                'completed_at': '完成時間',
+                'not_recorded': '未記錄',
+                'clipboard_success': '表格內容已複製到剪貼板！',
+                'download_table': '下載表格'
             },
             'en': {
                 'title': 'Pre-Flight Checklist for Drones in Hong Kong (Including Audit Items and Health Check)',
@@ -618,11 +601,13 @@
                 'site_safety_permission': 'Land or property owner permission obtained',
                 'site_safety_weather': 'Weather conditions confirmed suitable for flight',
                 'site_safety_pedestrian_distance': 'Pedestrian distance estimated',
+                'site_safety_form_d_signed_by_am': 'Confirm that Form D has been signed by the Accountable Manager (AM)',
                 'risk_management': 'Risk Management (Form E)',
                 'risk_management_hazards_identified': 'Potential hazards identified',
                 'risk_management_risk_assessed': 'Risk levels assessed',
                 'risk_management_mitigation': 'Risk mitigation measures identified',
                 'risk_management_risk_green_zone': 'All risks mitigated to acceptable level (Green Zone)',
+                'risk_management_form_e_signed_by_am': 'Confirm that the Risk Assessment Form (Form E) has been signed by the Accountable Manager (AM) prior to the operation',
                 'permits_insurance': 'Permits and Insurance',
                 'permits_insurance_permission_valid': 'Relevant permits valid',
                 'permits_insurance_insurance_valid': 'Insurance coverage confirmed (at least HKD 10 million)',
@@ -650,7 +635,11 @@
                 'please_complete_all_items': 'Please complete all items first',
                 'please_fill_all_details': 'Please fill in all action details',
                 'incomplete_items_message': 'The following items are not completed:\n',
-                'incomplete_sections_message': 'The following sections are not confirmed:\n'
+                'incomplete_sections_message': 'The following sections are not confirmed:\n',
+                'completed_at': 'Completed at',
+                'not_recorded': 'Not recorded',
+                'clipboard_success': 'Table content copied to clipboard!',
+                'download_table': 'Download table'
             }
         };
 
@@ -861,6 +850,40 @@
             const confirmTimestamp = new Date().toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' });
             confirmationTime.textContent = currentLang === 'zh-HK' ? `Accountable Manager 確認時間: ${confirmTimestamp}` : `Accountable Manager confirmation time: ${confirmTimestamp}`;
             alert(currentLang === 'zh-HK' ? 'Accountable Manager 已確認所有文件和記錄，請再次確認您已簽名！' : 'Accountable Manager has confirmed all documents and records, please confirm you have signed!');
+        }
+
+        function exportTable() {
+            let tableContent = translations[currentLang]['title'] + "\n\n";
+            tableContent += translations[currentLang]['action_time_label'] + " " + document.getElementById('action_time').value + "\n";
+            tableContent += translations[currentLang]['action_location_label'] + " " + document.getElementById('action_location').value + "\n";
+            tableContent += translations[currentLang]['action_theme_label'] + " " + document.getElementById('action_theme').value + "\n\n";
+
+            document.querySelectorAll('.section').forEach(section => {
+                const sectionTitle = section.querySelector('h2').textContent;
+                tableContent += sectionTitle + "\n";
+                const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const label = checkbox.parentElement.querySelector('span[data-en]').textContent;
+                        const timestampId = `timestamp-${checkbox.value}`;
+                        const timestamp = localStorage.getItem(timestampId) || translations[currentLang]['not_recorded'];
+                        tableContent += `- ${label} (` + translations[currentLang]['completed_at'] + `: ${timestamp})\n`;
+                    }
+                });
+                tableContent += '\n';
+            });
+
+            tableContent += translations[currentLang]['accountable_manager_name_label'] + " " + document.getElementById('accountable_manager_name').value + "\n";
+
+            navigator.clipboard.writeText(tableContent).then(() => {
+                alert(translations[currentLang]['clipboard_success']);
+            });
+
+            const blob = new Blob([tableContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.getElementById('download-link');
+            downloadLink.href = url;
+            downloadLink.textContent = translations[currentLang]['download_table'];
         }
 
         document.querySelector('#final-confirmation input[type="checkbox"]').addEventListener('change', checkAllSectionsConfirmed);
