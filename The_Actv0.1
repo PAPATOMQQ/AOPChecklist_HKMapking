@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Acts: Letters from Rome 遊戲助手</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .resource-tracker, .score-tracker {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 首頁 -->
+        <div id="home" class="page active">
+            <h1>The Acts: Letters from Rome</h1>
+            <button onclick="showPage('setup')">開始新遊戲</button>
+            <button onclick="showPage('rules')">規則查詢</button>
+        </div>
+
+        <!-- 遊戲設置頁面 -->
+        <div id="setup" class="page">
+            <h2>遊戲設置</h2>
+            <p>請輸入玩家人數（2-4）:</p>
+            <input type="number" id="playerCount" min="2" max="4" value="2">
+            <button onclick="setupGame()">確認設置</button>
+            <p>設置指引：請根據玩家人數分配配件，並將圓盤放置在地圖上。</p>
+            <button onclick="showPage('home')">返回</button>
+        </div>
+
+        <!-- 回合流程頁面 -->
+        <div id="turn" class="page">
+            <h2>回合流程</h2>
+            <p>當前階段：<span id="currentPhase">祈禱</span></p>
+            <p>行動指引：選擇以下行動之一</p>
+            <button onclick="alert('祈禱：增加祈禱點數 (+1)')">祈禱</button>
+            <button onclick="alert('教會：建立或升級教會')">教會</button>
+            <button onclick="alert('奇蹟：移除腐敗或獲得獎勵')">奇蹟</button>
+            <button onclick="alert('傳教：增加信徒數量')">傳教</button>
+            <button onclick="alert('旅行：移動到新地區')">旅行</button>
+            <button onclick="nextPhase()">下一階段</button>
+            <button onclick="showPage('home')">返回</button>
+        </div>
+
+        <!-- 資源管理頁面 -->
+        <div id="resources" class="page">
+            <h2>資源管理</h2>
+            <div id="playerResources"></div>
+            <button onclick="showPage('turn')">返回回合</button>
+        </div>
+
+        <!-- 計分系統頁面 -->
+        <div id="score" class="page">
+            <h2>計分系統</h2>
+            <div id="playerScores"></div>
+            <button onclick="calculateFinalScore()">計算終局得分</button>
+            <button onclick="showPage('home')">返回</button>
+        </div>
+
+        <!-- 規則查詢頁面 -->
+        <div id="rules" class="page">
+            <h2>規則查詢</h2>
+            <input type="text" id="ruleSearch" placeholder="輸入關鍵字搜尋規則">
+            <button onclick="searchRules()">搜尋</button>
+            <div id="ruleResult">
+                <p>示例規則：祈禱行動可增加1點祈禱點數。</p>
+            </div>
+            <button onclick="showPage('home')">返回</button>
+        </div>
+    </div>
+
+    <script>
+        let players = [];
+        let currentPhaseIndex = 0;
+        const phases = ['祈禱', '教會', '奇蹟', '傳教', '旅行'];
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'turn') updatePhase();
+            if (pageId === 'resources') updateResources();
+            if (pageId === 'score') updateScores();
+        }
+
+        function setupGame() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            players = [];
+            for (let i = 0; i < playerCount; i++) {
+                players.push({
+                    name: `玩家 ${i + 1}`,
+                    prayer: 0,
+                    silver: 0,
+                    corruption: 0,
+                    believers: 0
+                });
+            }
+            alert(`遊戲已設置完成，${playerCount} 位玩家準備就緒！`);
+            showPage('turn');
+        }
+
+        function updatePhase() {
+            document.getElementById('currentPhase').textContent = phases[currentPhaseIndex];
+        }
+
+        function nextPhase() {
+            currentPhaseIndex = (currentPhaseIndex + 1) % phases.length;
+            updatePhase();
+        }
+
+        function updateResources() {
+            const resourceDiv = document.getElementById('playerResources');
+            resourceDiv.innerHTML = '';
+            players.forEach((player, index) => {
+                resourceDiv.innerHTML += `
+                    <div class="resource-tracker">
+                        <h3>${player.name}</h3>
+                        祈禱點數: ${player.prayer} 
+                        <button onclick="adjustResource(${index}, 'prayer', 1)">+</button>
+                        <button onclick="adjustResource(${index}, 'prayer', -1)">-</button><br>
+                        銀幣: ${player.silver} 
+                        <button onclick="adjustResource(${index}, 'silver', 1)">+</button>
+                        <button onclick="adjustResource(${index}, 'silver', -1)">-</button><br>
+                        腐敗: ${player.corruption} 
+                        <button onclick="adjustResource(${index}, 'corruption', 1)">+</button>
+                        <button onclick="adjustResource(${index}, 'corruption', -1)">-</button>
+                    </div>`;
+            });
+        }
+
+        function adjustResource(playerIndex, resource, amount) {
+            players[playerIndex][resource] += amount;
+            if (players[playerIndex][resource] < 0) players[playerIndex][resource] = 0;
+            updateResources();
+        }
+
+        function updateScores() {
+            const scoreDiv = document.getElementById('playerScores');
+            scoreDiv.innerHTML = '';
+            players.forEach((player, index) => {
+                scoreDiv.innerHTML += `
+                    <div class="score-tracker">
+                        <h3>${player.name}</h3>
+                        信徒數量: ${player.believers} 
+                        <button onclick="adjustScore(${index}, 1)">+</button>
+                        <button onclick="adjustScore(${index}, -1)">-</button>
+                    </div>`;
+            });
+        }
+
+        function adjustScore(playerIndex, amount) {
+            players[playerIndex].believers += amount;
+            if (players[playerIndex].believers < 0) players[playerIndex].believers = 0;
+            updateScores();
+        }
+
+        function calculateFinalScore() {
+            let result = '終局計分：\n';
+            players.forEach(player => {
+                const letterBonus = Math.floor(player.believers / 5); // 假設每5信徒得1書信加分
+                const totalScore = player.believers + letterBonus;
+                result += `${player.name}: ${totalScore} 分 (信徒: ${player.believers}, 書信加分: ${letterBonus})\n`;
+            });
+            alert(result);
+        }
+
+        function searchRules() {
+            const query = document.getElementById('ruleSearch').value;
+            document.getElementById('ruleResult').innerHTML = `<p>搜尋結果：${query || '無關鍵字'} 的相關規則（示例：祈禱增加1點祈禱點數）。</p>`;
+        }
+    </script>
+</body>
+</html>
