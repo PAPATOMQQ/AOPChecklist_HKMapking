@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>希伯來文字母翻牌遊戲</title>
+  <title>希伯來文單字翻牌遊戲</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -47,7 +47,7 @@
     .card-front {
       background-color: #fff;
       transform: rotateY(180deg);
-      font-size: 24px;
+      font-size: 18px;
       font-family: 'Arial Hebrew', Arial, sans-serif;
     }
     .card-back {
@@ -72,12 +72,12 @@
   <div id="menu">
     <button onclick="resetGame()">重置遊戲</button>
     <button onclick="setMode('easy')">簡單模式 (2x4)</button>
-    <button onclick="setMode('hard')">困難模式 (4x4)</button>
+    <button onclick="setMode('hard')">困難模式 (4x5)</button>
   </div>
 
   <div id="start-screen" style="display: block;">
-    <h1>希伯來文字母翻牌遊戲</h1>
-    <p>先配對字母，然後按順序配對意義。</p>
+    <h1>希伯來文單字翻牌遊戲</h1>
+    <p>先配對單字，然後按順序配對單字與翻譯。</p>
     <button onclick="startGame()">開始遊戲</button>
   </div>
 
@@ -99,21 +99,23 @@
     let cards = [];
     let flippedCards = [];
     let matchedPairs = 0;
-    let gamePart = 1; // 1: 字母配對, 2: 意義配對
+    let gamePart = 1; // 1: 單字配對, 2: 單字與翻譯配對
     let startTime;
     let matchOrder = []; // 記錄第一部分完成配對的順序
     let mode = 'hard'; // 預設困難模式
 
-    // 希伯來文字母及其意義
-    const hebrewLetters = {
-      'א': 'Aleph',
-      'ב': 'Bet',
-      'ג': 'Gimel',
-      'ד': 'Dalet',
-      'ה': 'He',
-      'ו': 'Vav',
-      'ז': 'Zayin',
-      'ח': 'Chet'
+    // 希伯來文單字及其翻譯
+    const hebrewWords = {
+      'שלום': 'peace',
+      'בוקר טוב': 'good morning',
+      'ערב טוב': 'good evening',
+      'תודה': 'thank you',
+      'כן': 'yes',
+      'לא': 'no',
+      'אני': 'I',
+      'אתה': 'you (masculine)',
+      'את': 'you (feminine)',
+      'הוא': 'he'
     };
 
     function setMode(newMode) {
@@ -124,7 +126,7 @@
       hint.style.display = 'none';
     }
 
-   liderfunction startGame() {
+    function startGame() {
       startScreen.style.display = 'none';
       gameBoard.style.display = 'grid';
       hint.style.display = 'none';
@@ -133,17 +135,17 @@
       matchedPairs = 0;
       flippedCards = [];
       matchOrder = [];
-      let letters = Object.keys(hebrewLetters);
+      let words = Object.keys(hebrewWords);
       if (mode === 'easy') {
-        letters = letters.slice(0, 4); // 簡單模式只用前4個字母
+        words = words.slice(0, 4); // 簡單模式使用前4個單字
         gameBoard.style.gridTemplateColumns = 'repeat(4, 100px)';
         gameBoard.style.gridTemplateRows = 'repeat(2, 100px)';
       } else {
-        letters = letters.slice(0, 8); // 困難模式使用全部8個字母
-        gameBoard.style.gridTemplateColumns = 'repeat(4, 100px)';
+        words = words.slice(0, 10); // 困難模式使用全部10個單字
+        gameBoard.style.gridTemplateColumns = 'repeat(5, 100px)';
         gameBoard.style.gridTemplateRows = 'repeat(4, 100px)';
       }
-      let cardValuesPart1 = letters.flatMap(letter => [letter, letter]);
+      let cardValuesPart1 = words.flatMap(word => [word, word]);
       cards = shuffle([...cardValuesPart1]).map(value => createCard(value));
       gameBoard.innerHTML = '';
       cards.forEach(card => gameBoard.appendChild(card));
@@ -180,7 +182,7 @@
     }
 
     function checkMatch() {
-      const [card1, card2] = flippedCards要把這段程式碼放入artifact中;
+      const [card1, card2] = flippedCards;
       const value1 = card1.querySelector('.card-front').textContent;
       const value2 = card2.querySelector('.card-front').textContent;
 
@@ -188,10 +190,10 @@
         if (value1 === value2) {
           matchedPairs++;
           if (!matchOrder.includes(value1)) {
-            matchOrder.push(value1); // 記錄完成配對的字母
+            matchOrder.push(value1); // 記錄完成配對的單字
           }
           flippedCards = [];
-          if (matchedPairs === (mode === 'easy' ? 4 : 8)) {
+          if (matchedPairs === (mode === 'easy' ? 4 : 10)) {
             setTimeout(startPart2, 500);
           }
         } else {
@@ -202,10 +204,10 @@
           }, 1000);
         }
       } else if (gamePart === 2) {
-        if (value1 === value2) {
+        if ((hebrewWords[value1] === value2) || (hebrewWords[value2] === value1)) {
           matchedPairs++;
           flippedCards = [];
-          if (matchedPairs === (mode === 'easy' ? 4 : 8)) {
+          if (matchedPairs === (mode === 'easy' ? 4 : 10)) {
             setTimeout(endGame, 500);
           }
         } else {
@@ -223,10 +225,10 @@
       gamePart = 2;
       matchedPairs = 0;
       flippedCards = [];
-      let meanings = matchOrder.map(letter F => hebrewLetters[letter]);
-      let cardValuesPart2 = meanings.flatMap(meaning => [meaning, meaning]);
+      let words = matchOrder;
+      let cardValuesPart2 = words.flatMap(word => [word, hebrewWords[word]]);
       // 顯示提示
-      const hintText = `請按照以下順序配對意義：${matchOrder.map(letter => `${hebrewLetters[letter]}(${letter})`).join(', ')}`;
+      const hintText = `請按照以下順序配對單字與翻譯：${matchOrder.map(word => `${hebrewWords[word]}(${word})`).join(', ')}`;
       hint.textContent = hintText;
       hint.style.display = 'block';
       cards = shuffle([...cardValuesPart2]).map(value => createCard(value));
