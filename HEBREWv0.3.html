@@ -220,20 +220,27 @@
       }
     }
 
-    function startPart2() {
-      gameBoard.innerHTML = '';
-      gamePart = 2;
-      matchedPairs = 0;
-      flippedCards = [];
-      let words = matchOrder;
-      let cardValuesPart2 = words.flatMap(word => [word, hebrewWords[word]]);
-      // 顯示提示
-      const hintText = `請按照以下順序配對單字與翻譯：${matchOrder.map(word => `${hebrewWords[word]}(${word})`).join(', ')}`;
-      hint.textContent = hintText;
-      hint.style.display = 'block';
-      cards = shuffle([...cardValuesPart2]).map(value => createCard(value));
-      cards.forEach(card => gameBoard.appendChild(card));
-    }
+function startPart2() {
+  gameBoard.innerHTML = '';
+  gamePart = 2;
+  matchedPairs = 0;
+  flippedCards = [];
+  
+  let words = matchOrder;
+  let cardValuesPart2 = words.flatMap(word => [word, hebrewWords[word] || '未知翻譯']);
+  
+  // 生成提示，處理 undefined 的情況
+  const hintText = `請按照以下順序配對單字與翻譯：${matchOrder.map(word => {
+    const translation = hebrewWords[word] || '未知';
+    return `${translation}(${word})`;
+  }).join(', ')}`;
+  
+  hint.textContent = hintText;
+  hint.style.display = 'block';
+  
+  cards = shuffle([...cardValuesPart2]).map(value => createCard(value));
+  cards.forEach(card => gameBoard.appendChild(card));
+}
 
     function endGame() {
       const endTime = new Date();
