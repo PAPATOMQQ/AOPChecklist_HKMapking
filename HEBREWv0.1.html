@@ -10,31 +10,32 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
       background-color: #f0f0f0;
     }
-    #start-screen, #end-screen {
+    #start-screen, #end-screen, #hint {
       text-align: center;
+      margin-top: 20px;
     }
     #game-board {
       display: none;
       grid-template-columns: repeat(4, 100px);
-      grid-gap: 10px;
+      gap: 10px;
+      margin-top: 20px;
     }
     .card {
       width: 100px;
       height: 100px;
+      background-color: #3498db;
+      border-radius: 10px;
+      cursor: pointer;
       position: relative;
       transform-style: preserve-3d;
       transition: transform 0.5s;
-      cursor: pointer;
     }
     .card.flipped {
       transform: rotateY(180deg);
     }
-    .card-back, .card-front {
+    .card-front, .card-back {
       position: absolute;
       width: 100%;
       height: 100%;
@@ -42,38 +43,39 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      border: 2px solid #333;
       border-radius: 10px;
-    }
-    .card-back {
-      background-color: #4682b4;
     }
     .card-front {
       background-color: #fff;
       transform: rotateY(180deg);
+      font-size: 24px;
+      font-family: 'Arial Hebrew', Arial, sans-serif;
+    }
+    .card-back {
+      background-color: #3498db;
     }
     button {
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
-      background-color: #4682b4;
-      color: white;
+      background-color: #2ecc71;
       border: none;
       border-radius: 5px;
+      color: white;
     }
     button:hover {
-      background-color: #366b8c;
+      background-color: #27ae60;
     }
   </style>
 </head>
 <body>
   <div id="start-screen">
     <h1>希伯來文字母翻牌遊戲</h1>
-    <p>先進行字母配對，然後找到字母的意義。</p>
+    <p>先配對字母，然後按順序配對意義。</p>
     <button onclick="startGame()">開始遊戲</button>
   </div>
 
+  <div id="hint" style="display: none;"></div>
   <div id="game-board"></div>
 
   <div id="end-screen" style="display: none;">
@@ -86,13 +88,14 @@
     const gameBoard = document.getElementById('game-board');
     const startScreen = document.getElementById('start-screen');
     const endScreen = document.getElementById('end-screen');
+    const hint = document.getElementById('hint');
     const timeSpent = document.getElementById('time-spent');
     let cards = [];
     let flippedCards = [];
     let matchedPairs = 0;
     let gamePart = 1; // 1: 字母配對, 2: 意義配對
     let startTime;
-    let flipOrder = []; // 記錄第一部分的翻牌順序
+    let matchOrder = []; // 記錄第一部分完成配對的順序
 
     // 希伯來文字母及其意義
     const hebrewLetters = {
@@ -134,11 +137,12 @@
     function startGame() {
       startScreen.style.display = 'none';
       gameBoard.style.display = 'grid';
+      hint.style.display = 'none';
       startTime = new Date();
       gamePart = 1;
       matchedPairs = 0;
       flippedCards = [];
-      flipOrder = [];
+      matchOrder = [];
       cards = shuffle([...cardValuesPart1]).map(value => createCard(value));
       cards.forEach(card => gameBoard.appendChild(card));
     }
@@ -147,10 +151,6 @@
       if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
         card.classList.add('flipped');
         flippedCards.push(card);
-        if (gamePart === 1) {
-          const value = card.querySelector('.card-front').textContent;
-          if (!flipOrder.includes(value)) flipOrder.push(value);
-        }
 
         if (flippedCards.length === 2) {
           checkMatch();
@@ -166,6 +166,9 @@
       if (gamePart === 1) {
         if (value1 === value2) {
           matchedPairs++;
+          if (!matchOrder.includes(value1)) {
+            matchOrder.push(value1); // 記錄完成配對的字母
+          }
           flippedCards = [];
           if (matchedPairs === cardValuesPart1.length / 2) {
             setTimeout(startPart2, 500);
@@ -178,10 +181,10 @@
           }, 1000);
         }
       } else if (gamePart === 2) {
-        if ((hebrewLetters[value1] === value2) || (hebrewLetters[value2] === value1)) {
+        if (value1 === value2) {
           matchedPairs++;
           flippedCards = [];
-          if (matchedPairs === Object.keys(hebrewLetters).length) {
+          if (matchedPairs === cardValuesPart2.length / 2) {
             setTimeout(endGame, 500);
           }
         } else {
@@ -199,8 +202,12 @@
       gamePart = 2;
       matchedPairs = 0;
       flippedCards = [];
-      // 根據第一部分的翻牌順序生成第二部分的卡片
-      cardValuesPart2 = flipOrder.map(letter => [letter, hebrewLetters[letter]]).flat();
+      // 根據第一部分的完成順序生成第二部分的卡片（僅意義）
+      cardValuesPart2 = matchOrder.map(letter => hebrewLetters[letter]).flatMap(meaning => [meaning, meaning]);
+      // 顯示提示
+      const hintText = `請按照以下順序配對意義：${matchOrder.map(letter => hebrewLetters[letter]).join(', ')}`;
+      hint.textContent = hintText;
+      hint.style.display = 'block';
       cards = shuffle([...cardValuesPart2]).map(value => createCard(value));
       cards.forEach(card => gameBoard.appendChild(card));
     }
@@ -210,6 +217,7 @@
       const timeDiff = (endTime - startTime) / 1000; // 秒
       timeSpent.textContent = `你花了 ${timeDiff.toFixed(2)} 秒完成遊戲。`;
       gameBoard.style.display = 'none';
+      hint.style.display = 'none';
       endScreen.style.display = 'block';
     }
 
