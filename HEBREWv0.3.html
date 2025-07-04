@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>希伯來文字母翻牌遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f0f0f0;
+    }
+    #menu, #start-screen, #end-screen, #hint {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #game-board {
+      display: none;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #3498db;
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+    .card-front {
+      background-color: #fff;
+      transform: rotateY(180deg);
+      font-size: 24px;
+      font-family: 'Arial Hebrew', Arial, sans-serif;
+    }
+    .card-back {
+      background-color: #3498db;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #2ecc71;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu">
+    <button onclick="resetGame()">重置遊戲</button>
+    <button onclick="setMode('easy')">簡單模式 (2x4)</button>
+    <button onclick="setMode('hard')">困難模式 (4x4)</button>
+  </div>
+
+  <div id="start-screen" style="display: block;">
+    <h1>希伯來文字母翻牌遊戲</h1>
+    <p>先配對字母，然後按順序配對意義。</p>
+    <button onclick="startGame()">開始遊戲</button>
+  </div>
+
+  <div id="hint" style="display: none;"></div>
+  <div id="game-board"></div>
+
+  <div id="end-screen" style="display: none;">
+    <h1>恭喜你！</h1>
+    <p id="time-spent"></p>
+    <button onclick="resetGame()">再玩一次</button>
+  </div>
+
+  <script>
+    const gameBoard = document.getElementById('game-board');
+    const startScreen = document.getElementById('start-screen');
+    const endScreen = document.getElementById('end-screen');
+    const hint = document.getElementById('hint');
+    const timeSpent = document.getElementById('time-spent');
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let gamePart = 1; // 1: 字母配對, 2: 意義配對
+    let startTime;
+    let matchOrder = []; // 記錄第一部分完成配對的順序
+    let mode = 'hard'; // 預設困難模式
+
+    // 希伯來文字母及其意義
+    const hebrewLetters = {
+      'א': 'Aleph',
+      'ב': 'Bet',
+      'ג': 'Gimel',
+      'ד': 'Dalet',
+      'ה': 'He',
+      'ו': 'Vav',
+      'ז': 'Zayin',
+      'ח': 'Chet'
+    };
+
+    function setMode(newMode) {
+      mode = newMode;
+      startScreen.style.display = 'block';
+      gameBoard.style.display = 'none';
+      endScreen.style.display = 'none';
+      hint.style.display = 'none';
+    }
+
+   liderfunction startGame() {
+      startScreen.style.display = 'none';
+      gameBoard.style.display = 'grid';
+      hint.style.display = 'none';
+      startTime = new Date();
+      gamePart = 1;
+      matchedPairs = 0;
+      flippedCards = [];
+      matchOrder = [];
+      let letters = Object.keys(hebrewLetters);
+      if (mode === 'easy') {
+        letters = letters.slice(0, 4); // 簡單模式只用前4個字母
+        gameBoard.style.gridTemplateColumns = 'repeat(4, 100px)';
+        gameBoard.style.gridTemplateRows = 'repeat(2, 100px)';
+      } else {
+        letters = letters.slice(0, 8); // 困難模式使用全部8個字母
+        gameBoard.style.gridTemplateColumns = 'repeat(4, 100px)';
+        gameBoard.style.gridTemplateRows = 'repeat(4, 100px)';
+      }
+      let cardValuesPart1 = letters.flatMap(letter => [letter, letter]);
+      cards = shuffle([...cardValuesPart1]).map(value => createCard(value));
+      gameBoard.innerHTML = '';
+      cards.forEach(card => gameBoard.appendChild(card));
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createCard(value) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.innerHTML = `
+        <div class="card-back"></div>
+        <div class="card-front">${value}</div>
+      `;
+      card.addEventListener('click', () => flipCard(card));
+      return card;
+    }
+
+    function flipCard(card) {
+      if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
+        card.classList.add('flipped');
+        flippedCards.push(card);
+
+        if (flippedCards.length === 2) {
+          checkMatch();
+        }
+      }
+    }
+
+    function checkMatch() {
+      const [card1, card2] = flippedCards要把這段程式碼放入artifact中;
+      const value1 = card1.querySelector('.card-front').textContent;
+      const value2 = card2.querySelector('.card-front').textContent;
+
+      if (gamePart === 1) {
+        if (value1 === value2) {
+          matchedPairs++;
+          if (!matchOrder.includes(value1)) {
+            matchOrder.push(value1); // 記錄完成配對的字母
+          }
+          flippedCards = [];
+          if (matchedPairs === (mode === 'easy' ? 4 : 8)) {
+            setTimeout(startPart2, 500);
+          }
+        } else {
+          setTimeout(() => {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            flippedCards = [];
+          }, 1000);
+        }
+      } else if (gamePart === 2) {
+        if (value1 === value2) {
+          matchedPairs++;
+          flippedCards = [];
+          if (matchedPairs === (mode === 'easy' ? 4 : 8)) {
+            setTimeout(endGame, 500);
+          }
+        } else {
+          setTimeout(() => {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            flippedCards = [];
+          }, 1000);
+        }
+      }
+    }
+
+    function startPart2() {
+      gameBoard.innerHTML = '';
+      gamePart = 2;
+      matchedPairs = 0;
+      flippedCards = [];
+      let meanings = matchOrder.map(letter F => hebrewLetters[letter]);
+      let cardValuesPart2 = meanings.flatMap(meaning => [meaning, meaning]);
+      // 顯示提示
+      const hintText = `請按照以下順序配對意義：${matchOrder.map(letter => `${hebrewLetters[letter]}(${letter})`).join(', ')}`;
+      hint.textContent = hintText;
+      hint.style.display = 'block';
+      cards = shuffle([...cardValuesPart2]).map(value => createCard(value));
+      cards.forEach(card => gameBoard.appendChild(card));
+    }
+
+    function endGame() {
+      const endTime = new Date();
+      const timeDiff = (endTime - startTime) / 1000; // 秒
+      timeSpent.textContent = `你花了 ${timeDiff.toFixed(2)} 秒完成遊戲。`;
+      gameBoard.style.display = 'none';
+      hint.style.display = 'none';
+      endScreen.style.display = 'block';
+    }
+
+    function resetGame() {
+      endScreen.style.display = 'none';
+      gameBoard.innerHTML = '';
+      startGame();
+    }
+  </script>
+</body>
+</html>
