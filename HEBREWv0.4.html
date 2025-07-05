@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>希伯來文單字翻牌遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f0f0f0;
+    }
+    #menu, #start-screen, #end-screen, #hint {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #game-board {
+      display: none;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #3498db;
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+    .card-front {
+      background-color: #fff;
+      transform: rotateY(180deg);
+      font-size: 16px;
+      font-family: 'Arial Hebrew', Arial, sans-serif;
+      flex-direction: column;
+    }
+    .card-back {
+      background-color: #3498db;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #2ecc71;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #27ae60;
+    }
+    #hint ul {
+      list-style: none;
+      padding: 0;
+    }
+    #hint li {
+      font-size: 18px;
+      margin: 5px 0;
+    }
+    #hint li.current {
+      color: red;
+      font-weight: bold;
+    }
+    #hint li.completed {
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu">
+    <button onclick="resetGame()">重置遊戲</button>
+    <button onclick="setMode('easy')">簡單模式 (2x4)</button>
+    <button onclick="setMode('hard')">困難模式 (4x5)</button>
+  </div>
+
+  <div id="start-screen" style="display: block;">
+    <h1>希伯來文單字翻牌遊戲</h1>
+    <p>先翻牌記憶單字與翻譯，然後按順序配對。</p>
+    <label>
+      <input type="checkbox" id="showPronunciation" checked> 顯示羅馬化拼音
+    </label><br>
+    <button onclick="startGame()">開始遊戲</button>
+  </div>
+
+  <div id="hint" style="display: none;">
+    <h3>請按照以下順序配對：</h3>
+    <ul id="hint-list"></ul>
+  </div>
+  <div id="game-board"></div>
+
+  <div id="end-screen" style="display: none;">
+    <h1>恭喜你！</h1>
+    <p id="time-spent"></p>
+    <button onclick="resetGame()">再玩一次</button>
+  </div>
+
+  <script>
+    const gameBoard = document.getElementById('game-board');
+    const startScreen = document.getElementById('start-screen');
+    const endScreen = document.getElementById('end-screen');
+    const hint = document.getElementById('hint');
+    const hintList = document.getElementById('hint-list');
+    const timeSpent = document.getElementById('time-spent');
+    const showPronunciationCheckbox = document.getElementById('showPronunciation');
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let gamePart = 1;
+    let startTime;
+    let matchOrder = [];
+    let currentTargetIndex = 0;
+    let mode = 'hard';
+    let showPronunciation = true;
+
+    const hebrewWords = {
+      'שלום': { translation: 'peace', pronunciation: 'shalom' },
+      'בוקר טוב': { translation: 'good morning', pronunciation: 'boker tov' },
+      'ערב טוב': { translation: 'good evening', pronunciation: 'erev tov' },
+      'תודה': { translation: 'thank you', pronunciation: 'toda' },
+      'כן': { translation: 'yes', pronunciation: 'ken' },
+      'לא': { translation: 'no', pronunciation: 'lo' },
+      'אני': { translation: 'I', pronunciation: 'ani' },
+      'אתה': { translation: 'you (masculine)', pronunciation: 'ata' },
+      'את': { translation: 'you (feminine)', pronunciation: 'at' },
+      'הוא': { translation: 'he', pronunciation: 'hu' }
+    };
+
+    function setMode(newMode) {
+      mode = newMode;
+      startScreen.style.display = 'block';
+      gameBoard.style.display = 'none';
+      endScreen.style.display = 'none';
+      hint.style.display = 'none';
+    }
+
+    function startGame() {
+      showPronunciation = showPronunciationCheckbox.checked;
+      startScreen.style.display = 'none';
+      gameBoard.style.display = 'grid';
+      hint.style.display = 'none';
+      startTime = new Date();
+      gamePart = 1;
+      matchedPairs = 0;
+      flippedCards = [];
+      matchOrder = [];
+      currentTargetIndex = 0;
+      let words = Object.keys(hebrewWords);
+      if (mode === 'easy') {
+        words = words.slice(0, 4);
+        gameBoard.style.gridTemplateColumns = 'repeat(4, 100px)';
+        gameBoard.style.gridTemplateRows = 'repeat(2, 100px)';
+      } else {
+        words = words.slice(0, 10);
+        gameBoard.style.gridTemplateColumns = 'repeat(5, 100px)';
+        gameBoard.style.gridTemplateRows = 'repeat(4, 100px)';
+      }
+      let cardValuesPart1 = words.map(word => {
+        const pronunciation = showPronunciation ? ` (${hebrewWords[word].pronunciation})` : '';
+        return `${word}${pronunciation}<br>${hebrewWords[word].translation}`;
+      });
+      cardValuesPart1 = [...cardValuesPart1, ...cardValuesPart1];
+      cards = shuffle(cardValuesPart1).map(value => createCard(value));
+      gameBoard.innerHTML = '';
+      cards.forEach(card => gameBoard.appendChild(card));
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createCard(value) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.innerHTML = `
+        <div class="card-back"></div>
+        <div class="card-front">${value}</div>
+      `;
+      card.addEventListener('click', () => flipCard(card));
+      return card;
+    }
+
+    function flipCard(card) {
+      if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
+        card.classList.add('flipped');
+        flippedCards.push(card);
+
+        if (flippedCards.length === 2) {
+          checkMatch();
+        }
+      }
+    }
+
+    function checkMatch() {
+      const [card1, card2] = flippedCards;
+      const value1 = card1.querySelector('.card-front').textContent;
+      const value2 = card2.querySelector('.card-front').textContent;
+
+      if (gamePart === 1) {
+        if (value1 === value2) {
+          matchedPairs++;
+          const hebrewWord = value1.split('<')[0].trim();
+          if (!matchOrder.includes(hebrewWord)) {
+            matchOrder.push(hebrewWord);
+          }
+          flippedCards = [];
+          if (matchedPairs === (mode === 'easy' ? 4 : 10)) {
+            setTimeout(startPart2, 500);
+          }
+        } else {
+          setTimeout(() => {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            flippedCards = [];
+          }, 1000);
+        }
+      } else if (gamePart === 2) {
+        const word1 = Object.keys(hebrewWords).find(key => hebrewWords[key].translation === value1 || key === value1);
+        const word2 = Object.keys(hebrewWords).find(key => hebrewWords[key].translation === value2 || key === value2);
+        if (word1 && word2 && word1 === word2 && word1 === matchOrder[currentTargetIndex]) {
+          matchedPairs++;
+          flippedCards = [];
+          hintList.children[currentTargetIndex].classList.add('completed');
+          currentTargetIndex++;
+          if (currentTargetIndex < matchOrder.length) {
+            hintList.children[currentTargetIndex].classList.add('current');
+          }
+          if (matchedPairs === (mode === 'easy' ? 4 : 10)) {
+            setTimeout(endGame, 500);
+          }
+        } else {
+          setTimeout(() => {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            flippedCards = [];
+          }, 1000);
+        }
+      }
+    }
+
+    function startPart2() {
+      gameBoard.innerHTML = '';
+      gamePart = 2;
+      matchedPairs = 0;
+      flippedCards = [];
+      currentTargetIndex = 0;
+      let words = matchOrder;
+      let cardValuesPart2 = words.flatMap(word => {
+        const pronunciation = showPronunciation ? ` (${hebrewWords[word].pronunciation})` : '';
+        return [word + pronunciation, hebrewWords[word].translation];
+      });
+      cards = shuffle([...cardValuesPart2]).map(value => createCard(value));
+      cards.forEach(card => gameBoard.appendChild(card));
+      hintList.innerHTML = '';
+      matchOrder.forEach((word, index) => {
+        const pronunciation = showPronunciation ? ` (${hebrewWords[word].pronunciation})` : '';
+        const li = document.createElement('li');
+        li.textContent = `${hebrewWords[word].translation}(${word}${pronunciation})`;
+        if (index === 0) li.classList.add('current');
+        hintList.appendChild(li);
+      });
+      hint.style.display = 'block';
+    }
+
+    function endGame() {
+      const endTime = new Date();
+      const timeDiff = (endTime - startTime) / 1000;
+      timeSpent.textContent = `你花了 ${timeDiff.toFixed(2)} 秒完成遊戲。`;
+      gameBoard.style.display = 'none';
+      hint.style.display = 'none';
+      endScreen.style.display = 'block';
+    }
+
+    function resetGame() {
+      endScreen.style.display = 'none';
+      gameBoard.innerHTML = '';
+      startGame();
+    }
+  </script>
+</body>
+</html>
