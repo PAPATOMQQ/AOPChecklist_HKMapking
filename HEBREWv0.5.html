@@ -8,9 +8,31 @@
     body {
       font-family: Arial, sans-serif;
       display: flex;
+      flex-direction: row;
+      background-color: #f0f0f0;
+    }
+    #main-content {
+      display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #f0f0f0;
+      flex: 3;
+    }
+    #reminder {
+      flex: 1;
+      padding: 20px;
+      background-color: #e0f7fa;
+      border-radius: 10px;
+      margin-left: 20px;
+    }
+    #reminder h3 {
+      margin-top: 0;
+    }
+    #reminder ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    #reminder li {
+      margin-bottom: 10px;
     }
     #menu, #start-screen, #end-screen, #hint {
       text-align: center;
@@ -43,12 +65,12 @@
       align-items: center;
       justify-content: center;
       border-radius: 10px;
-      overflow: hidden; /* 防止文字溢出 */
+      overflow: hidden;
     }
     .card-front {
       background-color: #fff;
       transform: rotateY(180deg);
-      font-size: 24px; /* 調整為較大字型 */
+      font-size: 24px;
       font-family: 'Arial Hebrew', Arial, sans-serif;
       flex-direction: column;
     }
@@ -86,31 +108,38 @@
   </style>
 </head>
 <body>
-  <div id="menu">
-    <button onclick="resetGame()">重置遊戲</button>
-    <button onclick="setMode('easy')">簡單模式 (2x4)</button>
-    <button onclick="setMode('hard')">困難模式 (4x5)</button>
+  <div id="main-content">
+    <div id="menu">
+      <button onclick="resetGame()">重置遊戲</button>
+      <button onclick="setMode('easy')">簡單模式 (2x4)</button>
+      <button onclick="setMode('hard')">困難模式 (4x5)</button>
+    </div>
+
+    <div id="start-screen" style="display: block;">
+      <h1>希伯來文單字翻牌遊戲</h1>
+      <p>先翻牌記憶單字與翻譯，然後按順序配對。</p>
+      <label>
+        <input type="checkbox" id="showPronunciation" checked> 顯示羅馬化拼音
+      </label><br>
+      <button onclick="startGame()">開始遊戲</button>
+    </div>
+
+    <div id="hint" style="display: none;">
+      <h3>請按照以下順序配對：</h3>
+      <ul id="hint-list"></ul>
+    </div>
+    <div id="game-board"></div>
+
+    <div id="end-screen" style="display: none;">
+      <h1>恭喜你！</h1>
+      <p id="time-spent"></p>
+      <button onclick="resetGame()">再玩一次</button>
+    </div>
   </div>
 
-  <div id="start-screen" style="display: block;">
-    <h1>希伯來文單字翻牌遊戲</h1>
-    <p>先翻牌記憶單字與翻譯，然後按順序配對。</p>
-    <label>
-      <input type="checkbox" id="showPronunciation" checked> 顯示羅馬化拼音
-    </label><br>
-    <button onclick="startGame()">開始遊戲</button>
-  </div>
-
-  <div id="hint" style="display: none;">
-    <h3>請按照以下順序配對：</h3>
-    <ul id="hint-list"></ul>
-  </div>
-  <div id="game-board"></div>
-
-  <div id="end-screen" style="display: none;">
-    <h1>恭喜你！</h1>
-    <p id="time-spent"></p>
-    <button onclick="resetGame()">再玩一次</button>
+  <div id="reminder">
+    <h3>遊戲單字提醒</h3>
+    <ul id="reminder-list"></ul>
   </div>
 
   <script>
@@ -121,6 +150,7 @@
     const hintList = document.getElementById('hint-list');
     const timeSpent = document.getElementById('time-spent');
     const showPronunciationCheckbox = document.getElementById('showPronunciation');
+    const reminderList = document.getElementById('reminder-list');
     let cards = [];
     let flippedCards = [];
     let matchedPairs = 0;
@@ -150,6 +180,7 @@
       gameBoard.style.display = 'none';
       endScreen.style.display = 'none';
       hint.style.display = 'none';
+      updateReminder();
     }
 
     function startGame() {
@@ -176,12 +207,22 @@
       let cardValuesPart1 = [];
       words.forEach(word => {
         const pronunciation = showPronunciation ? ` (${hebrewWords[word].pronunciation})` : '';
-        cardValuesPart1.push({ type: 'A', content: `${word}` }); // A組只顯示希伯來文
-        cardValuesPart1.push({ type: 'B', content: `${word}${pronunciation}<br>${hebrewWords[word].translation}` }); // B組顯示希伯來文和翻譯
+        cardValuesPart1.push({ type: 'A', content: `${word}` });
+        cardValuesPart1.push({ type: 'B', content: `${word}${pronunciation}<br>${hebrewWords[word].translation}` });
       });
       cards = shuffle(cardValuesPart1).map(card => createCard(card.content));
       gameBoard.innerHTML = '';
       cards.forEach(card => gameBoard.appendChild(card));
+      updateReminder(words);
+    }
+
+    function updateReminder(words) {
+      reminderList.innerHTML = '';
+      (words || Object.keys(hebrewWords)).forEach(word => {
+        const li = document.createElement('li');
+        li.textContent = `${word} - ${hebrewWords[word].translation}`;
+        reminderList.appendChild(li);
+      });
     }
 
     function shuffle(array) {
@@ -207,7 +248,6 @@
       if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
         card.classList.add('flipped');
         flippedCards.push(card);
-
         if (flippedCards.length === 2) {
           checkMatch();
         }
@@ -216,12 +256,11 @@
 
     function checkMatch() {
       const [card1, card2] = flippedCards;
-      const value1 = card1.querySelector('.card-front').textContent;
-      const value2 = card2.querySelector('.card-front').textContent;
-
+      const value1 = card1.querySelector('.card-front').innerHTML;
+      const value2 = card2.querySelector('.card-front').innerHTML;
       if (gamePart === 1) {
-        const hebrewWord1 = value1.split(' ')[0]; // 提取希伯來文部分
-        const hebrewWord2 = value2.split(' ')[0];
+        const hebrewWord1 = value1.split('<')[0].trim();
+        const hebrewWord2 = value2.split('<')[0].trim();
         if (hebrewWord1 === hebrewWord2) {
           matchedPairs++;
           if (!matchOrder.includes(hebrewWord1)) {
