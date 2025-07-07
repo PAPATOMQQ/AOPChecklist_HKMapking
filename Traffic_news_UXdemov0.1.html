@@ -58,7 +58,7 @@
       border: none;
       border-radius: 5px;
       font-size: 18px;
-      cursor: pointer;
+      cursor: controllable;
       width: 100%;
     }
     button:hover {
@@ -86,7 +86,7 @@
       background-color: #0099cc;
       color: white;
     }
-    #accident-details, #hazard-details {
+    #accident-details, #hazard-details, #other-details {
       background-color: #fff5f5;
       padding: 10px;
       margin-top: 15px;
@@ -107,6 +107,28 @@
     #current-position:hover {
       background-color: #0077aa;
     }
+    #social-media-icons {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+    #social-media-icons p {
+      font-weight: bold;
+      color: #555;
+    }
+    #social-media-icons button {
+      padding: 10px 15px;
+      background-color: #e6f7ff;
+      border: 1px solid #0099cc;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #0099cc;
+      margin: 5px;
+    }
+    #social-media-icons button:hover {
+      background-color: #0099cc;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -121,9 +143,9 @@
         <label for="hazard">Hazard</label>
         <input type="radio" id="traffic-jam" name="incident-type" value="traffic-jam">
         <label for="traffic-jam">Traffic Jam</label>
-        <input type="radio" id="police" name="incident-type" value="police">
-        <label for="police">Police</label>
-        <input type="input">
+        <input type="radio" id="police-check-point" name="incident-type" value="police-check-point">
+        <label for="police-check-point">Police Check Point</label>
+        <input type="radio" id="other" name="incident-type" value="other">
         <label for="other">Other</label>
       </div>
     </div>
@@ -147,15 +169,15 @@
       </select>
     </div>
 
+    <div id="other-details" style="display: none;">
+      <label for="other-type">Please specify:</label>
+      <input type="text" id="other-type" name="other-type">
+    </div>
+
     <div class="form-group">
       <label for="road">Road/Highway/Cross:</label>
       <input type="text" id="road" name="road" placeholder="e.g., I-95">
       <button type="button" id="current-position">Current Position</button>
-    </div>
-
-    <div class="form-group">
-      <label for="near">Near:</label>
-      <input type="text" id="near" name="near" placeholder="e.g., Exit 10 or Main St">
     </div>
 
     <div class="form-group">
@@ -181,26 +203,32 @@
       <textarea id="comments" name="comments" placeholder="Additional details, e.g., number of vehicles involved, lane blockage, etc."></textarea>
     </div>
 
-    <div class="form-group">
-      <label for="social-media">Social Media Message:</label>
-      <textarea id="social-media" name="social-media" placeholder="Optional message to share on social media"></textarea>
-    </div>
-
     <button type="submit">Submit Report</button>
   </form>
 
+  <div id="social-media-icons">
+    <p>Share your report on social media:</p>
+    <button onclick="share('WeChat')">WeChat</button>
+    <button onclick="share('WhatsApp')">WhatsApp</button>
+    <button onclick="share('Facebook')">Facebook</button>
+    <button onclick="share('Instagram')">Instagram</button>
+  </div>
+
   <script>
-    const incidentRadSUNDAYios = document.querySelectorAll('input[name="incident-type"]');
+    const incidentRadios = document.querySelectorAll('input[name="incident-type"]');
     incidentRadios.forEach(radio => {
       radio.addEventListener('change', function() {
         const type = this.value;
         document.getElementById('accident-details').style.display = type === 'accident' ? 'block' : 'none';
         document.getElementById('hazard-details').style.display = type === 'hazard' ? 'block' : 'none';
+        document.getElementById('other-details').style.display = type === 'other' ? 'block' : 'none';
+        if (type !== 'other') {
+          document.getElementById('other-type').value = '';
+        }
       });
     });
 
     document.getElementById('current-position').addEventListener('click', function() {
-      // Simulate getting current position
       const sampleAddress = "123 Main St, City, State";
       document.getElementById('road').value = sampleAddress;
     });
@@ -208,7 +236,12 @@
     document.querySelector('form').addEventListener('submit', function(e) {
       e.preventDefault();
       alert('Thank you for your report!');
+      document.getElementById('social-media-icons').style.display = 'block';
     });
+
+    function share(platform) {
+      alert(`Sharing on ${platform}.`);
+    }
   </script>
 </body>
 </html>
