@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traffic Incident Report</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      max-width: 400px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    .form-group {
+      background-color: #f9f9f9;
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      color: #555;
+    }
+    select, input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    select {
+      background-color: #e6f7ff;
+    }
+    textarea {
+      resize: vertical;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #0099cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 18px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0077aa;
+    }
+    .radio-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .radio-buttons input[type="radio"] {
+      display: none;
+    }
+    .radio-buttons label {
+      padding: 10px 15px;
+      background-color: #e6f7ff;
+      border: 1px solid #0099cc;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #0099cc;
+      font-weight: normal;
+    }
+    .radio-buttons input[type="radio"]:checked + label {
+      background-color: #0099cc;
+      color: white;
+    }
+    #accident-details, #hazard-details {
+      background-color: #fff5f5;
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 5px;
+      border: 1px solid #fdd;
+    }
+    #current-position {
+      padding: 5px 10px;
+      font-size: 14px;
+      background-color: #0099cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    #current-position:hover {
+      background-color: #0077aa;
+    }
+  </style>
+</head>
+<body>
+  <h1>Traffic Incident Report</h1>
+  <form>
+    <div class="form-group">
+      <label>Incident Type:</label>
+      <div class="radio-buttons">
+        <input type="radio" id="accident" name="incident-type" value="accident">
+        <label for="accident">Accident</label>
+        <input type="radio" id="hazard" name="incident-type" value="hazard">
+        <label for="hazard">Hazard</label>
+        <input type="radio" id="traffic-jam" name="incident-type" value="traffic-jam">
+        <label for="traffic-jam">Traffic Jam</label>
+        <input type="radio" id="police" name="incident-type" value="police">
+        <label for="police">Police</label>
+        <input type="radio" id="other" name="incident-type" value="other">
+        <label for="other">Other</label>
+      </div>
+    </div>
+
+    <div id="accident-details" style="display: none;">
+      <label for="severity">Severity:</label>
+      <select id="severity" name="severity">
+        <option value="minor">Minor</option>
+        <option value="moderate">Moderate</option>
+        <option value="major">Major</option>
+      </select>
+    </div>
+
+    <div id="hazard-details" style="display: none;">
+      <label for="hazard-type">Hazard Type:</label>
+      <select id="hazard-type" name="hazard-type">
+        <option value="on-road">On Road</option>
+        <option value="on-shoulder">On Shoulder</option>
+        <option value="weather">Weather</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="road">Road/Highway/Cross:</label>
+      <div style="display: flex; align-items: center;">
+        <input type="text" id="road" name="road" placeholder="e.g., I-95" style="flex: 1;">
+        <button type="button" id="current-position">Current Position</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="near">Near:</label>
+      <input type="text" id="near" name="near" placeholder="e.g., Exit 10 or Main St">
+    </div>
+
+    <div class="form-group">
+      <label>Direction:</label>
+      <div class="radio-buttons">
+        <input type="radio" id="northbound" name="direction" value="northbound">
+        <label for="northbound">Northbound</label>
+        <input type="radio" id="southbound" name="direction" value="southbound">
+        <label for="southbound">Southbound</label>
+        <input type="radio" id="eastbound" name="direction" value="eastbound">
+        <label for="eastbound">Eastbound</label>
+        <input type="radio" id="westbound" name="direction" value="westbound">
+        <label for="westbound">Westbound</label>
+        <input type="radio" id="both" name="direction" value="both">
+        <label for="both">Both Directions</label>
+        <input type="radio" id="unknown" name="direction" value="unknown">
+        <label for="unknown">Unknown</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="comments">Comments:</label>
+      <textarea id="comments" name="comments" placeholder="Additional details, e.g., number of vehicles involved, lane blockage, etc."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="social-media">Social Media Message:</label>
+      <textarea id="social-media" name="social-media" placeholder="Optional message to share on social media"></textarea>
+    </div>
+
+    <button type="submit">Submit Report</button>
+  </form>
+
+  <script>
+    const incidentRadios = document.querySelectorAll('input[name="incident-type"]');
+    incidentRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        const type = this.value;
+        document.getElementById('accident-details').style.display = type === 'accident' ? 'block' : 'none';
+        document.getElementById('hazard-details').style.display = type === 'hazard' ? 'block' : 'none';
+      });
+    });
+
+    document.getElementById('current-position').addEventListener('click', function() {
+      // Simulate getting current position
+      const sampleAddress = "123 Main St, City, State";
+      document.getElementById('road').value = sampleAddress;
+    });
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('Thank you for your report!');
+    });
+  </script>
+</body>
+</html>
